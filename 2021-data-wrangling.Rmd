@@ -1,0 +1,215 @@
+---
+title: "Data wrangling with `dpylr` and `tidyr`"
+author: "Ryan Clement"
+date: "June 29, 2021, 1:00-3:30 PM EDT"
+output: 
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+```{css, echo=FALSE}
+.mytable {
+  width: 50%;
+  }
+```
+
+## Your instructors{.smaller}
+
+![Ryan Clement, Data Services Librarian: [go/ryan/](http://go.middlebury.edu/ryan)](https://libapps.s3.amazonaws.com/accounts/75445/images/ryan_libSquare.jpg){width=125px}
+
+![Wendy Shook, Science Data Librarian: [go/wshook/](http://go.middlebury.edu/wshook)](https://libapps.s3.amazonaws.com/accounts/77191/profiles/66296/small_blackboard.jpg){width=125px}
+
+![Jonathan Kemp, Telescope & Scientific Computing Specialist: [go/jkemp/](http://go.middlebury.edu/jkemp)](https://libapps.s3.amazonaws.com/accounts/258290/profiles/259996/jkemp.jpg){width=125px}
+
+## Expectations for working together in Zoom
+
+* Take some time to set up your screen
+  * RStudio, Zoom window, Zoom chat, maybe a web browser
+* Leave your camera on if you are comfortable
+* Feel free to ask questions by:
+  * Unmuting, raising hand, putting question in chat...
+* Don't hesitate to ask questions!
+
+## Asking questions, giving feedback{.vcenter .flexbox}
+
+![](slides/zoom_reactions.png)
+
+## Plan for today
+
+1. A short aside on R pacakges
+2. What is the `tidyverse` package?
+3. Selecting, filtering, etc. with `dplyr`
+4. Split-apply-combine data analysis
+5. Reshaping data with `tidyr`
+6. Exporting data 
+
+## What is an R package?
+
+*  get new packages from the [Comprehensive R Archive Network (CRAN)](http://lib.stat.cmu.edu/R/CRAN/) using `install.packages()`
+* load packages in an R session using `library()`
+* access documentation for a package with `help(package = "package_name")`
+
+## What is the `tidyverse` package?{.flexbox .vcenter .smaller}
+
+![](slides/tidyverse-webpage.png){width=80%}
+
+[The `tidyverse` collection of packages](https://www.tidyverse.org) 
+
+## `dplyr` functions are verbs{.smaller}
+
+We’re going to learn some of the most common dplyr functions:
+
+* `select()`: subset columns
+* `filter()`: subset rows on conditions
+* `mutate()`: create new columns by using information from other columns
+* `group_by()` and `summarize()`: create summary statistics on grouped data
+* `arrange()`: sort results
+* `count()`: count discrete values
+
+## Exercise #1
+
+Using pipes, subset the `interviews` data to include interviews where respondents were members of an irrigation association (`memb_assoc`) and retain only the columns `affect_conflicts`, `liv_count`, and `no_meals`.
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Creating new variables with `mutate` {.vcenter .flexbox}
+
+Frequently you’ll want to create new columns based on the values in existing columns, for example to do unit conversions, or to find the ratio of values in two columns. For this we’ll use `mutate()`.
+
+
+## Exercise #2
+
+Create a new dataframe from the `interviews` data that meets the following criteria: contains only the `village` column and a new column called `total_meals` containing a value that is equal to the total number of meals served in the household per day on average (`no_membrs * no_meals`). 
+Only the rows where `total_meals` is greater than 20 should be shown in the final dataframe.
+
+**Hint**: think about how the commands should be ordered to produce this data frame!
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Split-apply-combine data analysis
+
+1. split the data into groups
+2. apply some analysis to each group
+3. then combine the results
+
+`dplyr` makes this process easy, particularly with the `group_by()` and `summarize()` functions.
+
+## Exercise #3
+
+How many households in the survey have an average of two meals per day? Three meals per day? Are there any other numbers of meals represented?
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exercise #4
+
+Use `group_by()` and `summarize()` to find the mean, min, and max number of household members for each village. Also add the number of observations (hint: see ?n).
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exercise #5
+
+What was the largest household interviewed in each month?
+
+**Hint**: this question requires the `lubridate` package, which you may (or may not) have worked with on your own after last week's workshop.
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Reshaping data with `tidyr`
+
+There are essentially three rules that define a “tidy” dataset:
+
+1. Each variable has its own column
+2. Each observation has its own row
+3. Each value must have its own cell
+
+In this section we will explore how these rules are linked to the different data formats researchers are often interested in: “wide” and “long”. 
+
+First we will explore qualities of the `interviews` data and how they relate to these different types of data formats.
+
+## Wide vs. long data
+
+![](https://datacarpentry.org/r-socialsci/fig/tidyr-pivot_wider_longer.gif)
+
+## A wide dataset
+
+```{r wide-data, echo=FALSE, results='asis'}
+library(knitr)
+
+wide_df <- tribble(
+  ~id, ~x, ~y, ~z,
+  #---|--|----|---
+  1, 10, 2, 100,
+  2, 24, 2.5, 123,
+  3, 45, 4, 213, 
+  4, 12, 3.24, 245,
+  5, 30, 1, 120
+)
+
+kable(wide_df)
+```
+
+## A long dataset {.smaller}
+
+```{r long-data, echo=FALSE, results='asis'}
+library(knitr)
+
+wide_df <- tribble(
+  ~id, ~x, ~y, ~z,
+  #---|--|----|---
+  1, 10, 2, 100,
+  2, 24, 2.5, 123,
+  3, 45, 4, 213, 
+  4, 12, 3.24, 245,
+  5, 30, 1, 120
+)
+
+long_df <- wide_df %>%
+  pivot_longer(-id, names_to = "name", values_to = "value")
+
+kable(long_df)
+```
+
+## Why would you need to reshape data?
+
+
+## Pivoting wider
+
+![](https://datacarpentry.org/r-socialsci/fig/pivot_long_to_wide.png){width=85%}
+
+## Pivoting longer
+
+![](https://datacarpentry.org/r-socialsci/fig/pivot_wide_to_long.png){width=85%}
+
+## Cleaning our data with `pivot_wider()`
+
+
+## Exercise #6
+
+Create a new dataframe (named `interviews_months_lack_food`) that has one column for each month and records `TRUE` or `FALSE` for whether each interview respondent was lacking food in that month.
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exercise #7 
+
+How many months (on average) were respondents without food if they did belong to an irrigation association? What about if they didn’t?
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exporting data
+
+Similar to the `read_csv()` function used for reading CSV files into R, there is a `write_csv()` function that generates CSV files from dataframes.
+
+Before using `write_csv()`, we are going to create a new folder, `data_output`, in our working directory that will store this generated dataset. We don’t want to write generated datasets in the same directory as our raw data. It’s good practice to keep them separate. The data folder should only contain the raw, unaltered data, and should be left alone to make sure we don’t delete or modify it. In contrast, our script will generate the contents of the `data_output` directory, so even if the files it contains are deleted, we can always re-generate them.
+
+## Thank you!
+
+To sign up for more sessions: [go/summer-data-workshops/](http://go.middlebury.edu/summer-data-workshops/)
+
+Assessment survey: [go/summer-data-assessment/](http://go.middlebury.edu/summer-data-assessment)
+
+Ryan's contact info: [go/ryan/](http://go.middlebury.edu/ryan)
