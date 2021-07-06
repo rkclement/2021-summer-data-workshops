@@ -1,0 +1,222 @@
+---
+title: "Creating high quality graphics with `ggplot2`"
+author: "Ryan Clement"
+date: "7/6/2021, 1:00 - 3:30 PM EDT"
+output: 
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(tufte)
+```
+
+## Your instructors{.smaller}
+
+![Ryan Clement, Data Services Librarian: [go/ryan/](http://go.middlebury.edu/ryan)](https://libapps.s3.amazonaws.com/accounts/75445/images/ryan_libSquare.jpg){width=125px}
+
+![Wendy Shook, Science Data Librarian: [go/wshook/](http://go.middlebury.edu/wshook)](https://libapps.s3.amazonaws.com/accounts/77191/profiles/66296/small_blackboard.jpg){width=125px}
+
+![Jonathan Kemp, Telescope & Scientific Computing Specialist: [go/jkemp/](http://go.middlebury.edu/jkemp)](https://libapps.s3.amazonaws.com/accounts/258290/profiles/259996/jkemp.jpg){width=125px}
+
+## Expectations for working together in Zoom
+
+* Take some time to set up your screen
+  * RStudio, Zoom window, Zoom chat, maybe a web browser
+* Leave your camera on if you are comfortable
+* Feel free to ask questions by:
+  * Unmuting, raising hand, putting question in chat...
+* Don't hesitate to ask questions!
+
+## Asking questions, giving feedback{.vcenter .flexbox}
+
+![](slides/zoom_reactions.png)
+
+## Plan for today
+
+1. The Grammar of Graphics
+2. `ggplot2` basics
+3. Building plots iteratively 
+4. Adding labels and titles
+5. Theming
+6. Saving your output
+
+NOTE: We'll have a break about halfway through!
+
+## Getting the data loaded
+
+```{r message=FALSE, echo = TRUE}
+
+# if attended last week and properly saved the data
+interviews_plotting <- read_csv("data_output/interviews_plotting.csv")
+
+# if you didn't attend last week and/or don't have the data
+# interviews_plotting <- read_csv("https://raw.githubusercontent.com/rkclement/2021-summer-data-workshops/main/data_output/interviews_plotting.csv")
+```
+
+
+## The Grammar of Graphics
+
+> "The layered grammar of graphics approach is implemented in ggplot2, a widely used graphics library for R. All graphics in this library are built using a layered approach, building layers up to create the final graphic."
+>
+> `r tufte::quote_footer('--- [Benjamin Soltoff, "Computing for the Social Sciences," University of Chicago](https://cfss.uchicago.edu/notes/grammar-of-graphics/)')`
+
+\b>
+
+> "A grammar may ... help guide us on what a well-formed or correct graphic looks like, but there will still be many grammatically correct but nonsensical graphics. This is easy to see by analogy to the English language: good grammar is just the first step in creating a good sentence."
+> 
+> `r tufte::quote_footer('--- Wickham, Hadley. “A Layered Grammar of Graphics.” Journal of Computational and Graphical Statistics 19, no. 1 (2010): 3–28.
+')`
+
+## Components of a `ggplot2` graphic
+
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system (coord)
+* Faceting (facet)
+* Themes
+
+## Most basic components of a `ggplot2` graphic
+
+* Data
+* Aesthetic mapping (`aes`)
+    * Describes how variables are mapped onto graphical attributes
+    * Visual attribute of data including x-y axes, `color`, `fill`, `shape`, and `alpha`
+* Geometric objects (`geom`)
+    * Determines how values are rendered graphically, as bars (`geom_bar`), scatterplot (`geom_point`), line (`geom_line`), etc.
+
+```{r eval = FALSE, echo = TRUE}
+<DATA> %>%
+    ggplot(aes(<MAPPINGS>)) +
+    <GEOM_FUNCTION>()
+```
+
+
+## Correctly using the `+` for adding layers
+
+```{r eval = FALSE, echo = TRUE}
+## This is the correct syntax for adding layers
+interviews_plot +
+    geom_point()
+
+## This will not add the new layer and will return an error message
+interviews_plot
++ geom_point()
+```
+
+## Exercise #1 
+
+Use what you just learned to create a scatter plot of `rooms` by `village` with the `respondent_wall_type` showing in different colors. Does this seem like a good way to display the relationship between these variables? What other kinds of plots might you use to show this type of data?
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Boxplots
+
+```{r echo = FALSE}
+interviews_plotting %>%
+    ggplot(aes(x = respondent_wall_type, y = rooms)) +
+    geom_boxplot()
+```
+
+## Exercise #2
+
+Boxplots are useful summaries, but hide the shape of the distribution. For example, if the distribution is bimodal, we would not see it in a boxplot. An alternative to the boxplot is the violin plot, where the shape (of the density of points) is drawn.
+
+* Replace the box plot with a violin plot; see `geom_violin()`.
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exercise #3
+
+So far, we’ve looked at the distribution of room number within wall type. Try making a new plot to explore the distribution of another variable within wall type.
+
+* Create a boxplot for `liv_count` for each wall type. Overlay the boxplot layer on a jitter layer to show actual measurements.
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Exercise #4
+
+Add colour to the data points on your boxplot according to whether the respondent is a member of an irrigation association (`memb_assoc`).
+
+When you're done, please give a `:thumbs-up:` or a `:green-check:` in the Zoom reactions.
+
+## Barplots
+
+```{r echo = FALSE}
+interviews_plotting %>%
+    ggplot(aes(x = respondent_wall_type)) +
+    geom_bar()
+```
+
+## Exercise #5
+
+Create a bar plot showing the proportion of respondents in each village who are or are not part of an irrigation association (`memb_assoc`). Include only respondents who answered that question in the calculations and plot. Which village had the lowest proportion of respondents in an irrigation association?
+
+## Labels and titles
+
+The `labs` function takes the following arguments:
+
+* `title` – to produce a plot title
+* `subtitle` – to produce a plot subtitle (smaller text placed beneath the title)
+* `caption` – a caption for the plot
+* `...` – any pair of name and value for aesthetics used in the plot (e.g., `x`, `y`, `fill`, `color`, `size`)
+
+## Faceting
+
+```{r echo = FALSE}
+percent_wall_type <- interviews_plotting %>%
+    filter(respondent_wall_type != "cement") %>%
+    count(village, respondent_wall_type) %>%
+    group_by(village) %>%
+    mutate(percent = (n / sum(n)) * 100) %>%
+    ungroup()
+```
+
+
+```{r echo = FALSE}
+percent_wall_type %>%
+    ggplot(aes(x = respondent_wall_type, y = percent)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(title="Proportion of wall type by village",
+         x="Wall Type",
+         y="Percent") +
+    facet_wrap(~ village)
+```
+
+## `ggplot2` themes
+
+In addition to `theme_bw`(), which changes the plot background to white, `ggplot2` comes with several other themes which can be useful to quickly change the look of your visualization. The complete list of themes is available at [https://ggplot2.tidyverse.org/reference/ggtheme.html](https://ggplot2.tidyverse.org/reference/ggtheme.html). `theme_minimal`() and `theme_light`() are popular, and `theme_void`() can be useful as a starting point to create a new hand-crafted theme.
+
+The [`ggthemes`](https://jrnold.github.io/ggthemes/reference/index.html) package provides a wide variety of options (including an Excel 2003 theme). The `ggplot2` [extensions website](https://exts.ggplot2.tidyverse.org/) provides a list of packages that extend the capabilities of `ggplot2`, including additional themes.
+
+* Experiment with at least two different themes. Build the previous plot using each of those themes. Which do you like best?
+
+## Exercise 6
+
+With all of this information in hand, please take another five minutes to either improve one of the plots generated in this exercise or create a beautiful graph of your own. Use the RStudio `ggplot2` [cheat sheet](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf) for inspiration. Here are some ideas:
+
+* See if you can make the bars white with black outline.
+* Try using a different colour palette (see [http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/](http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/)).
+
+## Saving your output
+
+After creating your plot, you can save it to a file in your favorite format. The *Export* tab in the *Plot* pane in RStudio will save your plots at low resolution, which will not be accepted by many journals and will not scale well for posters.
+
+Instead, use the `ggsave`() function, which allows you easily change the dimension and resolution of your plot by adjusting the appropriate arguments (`width`, `height`, and `dpi`).
+
+Make sure you have the `fig_output/` folder in your working directory.
+
+## Thank you!
+
+To sign up for more sessions: [go/summer-data-workshops/](http://go.middlebury.edu/summer-data-workshops/)
+
+Assessment survey: [go/summer-data-assessment/](http://go.middlebury.edu/summer-data-assessment)
+
+Ryan's contact info: [go/ryan/](http://go.middlebury.edu/ryan)
